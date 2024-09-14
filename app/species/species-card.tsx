@@ -12,7 +12,7 @@ can cause errors with matching props and state in child components if the list o
 */
 import type { Database } from "@/lib/schema";
 import Image from "next/image";
-import EditableDialog from "./editable-dialog";
+import EditSpeciesDialog from "./edit-species-dialog";
 import LearnMoreDialog from "./learn-more-dialog";
 
 //We reuse this in learn-more-dialog
@@ -36,9 +36,18 @@ export default function SpeciesCard({ species, userId }: SpeciesCardProps) {
       <h4 className="text-lg font-light">{species.common_name}</h4>
       <p>{species.description ? species.description.slice(0, 150).trim() + "..." : ""}</p>
 
-      {/*Check if user is authorized to edit this species,
-      then show either the static or editable version of the Learn More card*/}
-      {userId == species.author ? <EditableDialog species={species} /> : <LearnMoreDialog species={species} />}
+      {/*Check if user is authorized to edit this species, then show edit button
+      and adjust css layout for buttons accordingly*/}
+      {userId == species.author ? (
+        <div className="flex place-items-end space-x-3">
+          <div className="w-1/2">
+            <LearnMoreDialog species={species} />
+          </div>
+          <EditSpeciesDialog species={species} />
+        </div>
+      ) : (
+        <LearnMoreDialog species={species} />
+      )}
     </div>
   );
 }
