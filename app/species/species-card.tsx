@@ -10,12 +10,21 @@ on the client-side to correctly match component state and props should the order
 React server components don't track state between rerenders, so leaving the uniquely identified components (e.g. SpeciesCard)
 can cause errors with matching props and state in child components if the list order changes.
 */
-import { Button } from "@/components/ui/button";
 import type { Database } from "@/lib/schema";
 import Image from "next/image";
-type Species = Database["public"]["Tables"]["species"]["Row"];
+import EditableDialog from "./editable-dialog";
+import LearnMoreDialog from "./learn-more-dialog";
 
-export default function SpeciesCard({ species }: { species: Species }) {
+//We reuse this in learn-more-dialog
+export type Species = Database["public"]["Tables"]["species"]["Row"];
+
+//pass in both species data and the current user ID, which we will use to authenticate editing
+interface SpeciesCardProps {
+  species: Species;
+  userId: string;
+}
+
+export default function SpeciesCard({ species, userId }: SpeciesCardProps) {
   return (
     <div className="m-4 w-72 min-w-72 flex-none rounded border-2 p-3 shadow">
       {species.image && (
@@ -23,11 +32,13 @@ export default function SpeciesCard({ species }: { species: Species }) {
           <Image src={species.image} alt={species.scientific_name} fill style={{ objectFit: "cover" }} />
         </div>
       )}
-      <h3 className="mt-3 text-2xl font-semibold">{species.scientific_name}</h3>
-      <h4 className="text-lg font-light italic">{species.common_name}</h4>
+      <h3 className="mt-3 text-2xl font-semibold italic">{species.scientific_name}</h3>
+      <h4 className="text-lg font-light">{species.common_name}</h4>
       <p>{species.description ? species.description.slice(0, 150).trim() + "..." : ""}</p>
-      {/* Replace the button with the detailed view dialog. */}
-      <Button className="mt-3 w-full">Learn More</Button>
+
+      {/*Check if user is authorized to edit this species,
+      then show either the static or editable version of the Learn More card*/}
+      {userId == species.author ? <EditableDialog species={species} /> : <LearnMoreDialog species={species} />}
     </div>
   );
 }
