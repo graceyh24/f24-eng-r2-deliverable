@@ -14,6 +14,7 @@ import {
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/use-toast";
 import { createBrowserSupabaseClient } from "@/lib/client-utils";
@@ -27,10 +28,10 @@ import { z } from "zod";
 // zod handles validation of the input values with methods like .string(), .nullable(). It also processes the form inputs with .transform() before the inputs are sent to the database.
 
 // Define kingdom enum for use in Zod schema and displaying dropdown options in the form
-const kingdoms = z.enum(["Animalia", "Plantae", "Fungi", "Protista", "Archaea", "Bacteria"]);
+export const kingdoms = z.enum(["Animalia", "Plantae", "Fungi", "Protista", "Archaea", "Bacteria"]);
 
-// Use Zod to define the shape + requirements of a Species entry; used in form validation
-const speciesSchema = z.object({
+// Use Zod to define the shape + requirements of a Species entry; reused in edit form
+export const speciesSchema = z.object({
   scientific_name: z
     .string()
     .trim()
@@ -43,6 +44,7 @@ const speciesSchema = z.object({
     .transform((val) => (!val || val.trim() === "" ? null : val.trim())),
   kingdom: kingdoms,
   total_population: z.number().int().positive().min(1).nullable(),
+  endangered: z.boolean().default(false).optional(),
   image: z
     .string()
     .url()
@@ -70,6 +72,7 @@ const defaultValues: Partial<FormData> = {
   common_name: null,
   kingdom: "Animalia",
   total_population: null,
+  endangered: false,
   image: null,
   description: null,
 };
@@ -98,6 +101,7 @@ export default function AddSpeciesDialog({ userId }: { userId: string }) {
         kingdom: input.kingdom,
         scientific_name: input.scientific_name,
         total_population: input.total_population,
+        endangered: input.endangered,
         image: input.image,
       },
     ]);
@@ -225,6 +229,22 @@ export default function AddSpeciesDialog({ userId }: { userId: string }) {
                     </FormItem>
                   );
                 }}
+              />
+              <FormField
+                control={form.control}
+                name="endangered"
+                render={(
+                  { field }, //switch button to indicate whether endangered or not, default is not
+                ) => (
+                  <FormItem>
+                    <div className="space-y-0.5">
+                      <FormLabel>Endangered</FormLabel>
+                    </div>
+                    <FormControl>
+                      <Switch checked={field.value} onCheckedChange={field.onChange} />
+                    </FormControl>
+                  </FormItem>
+                )}
               />
               <FormField
                 control={form.control}

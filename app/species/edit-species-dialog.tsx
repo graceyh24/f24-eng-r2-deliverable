@@ -14,6 +14,7 @@ import {
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/use-toast";
 import { createBrowserSupabaseClient } from "@/lib/client-utils";
@@ -21,38 +22,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useState, type BaseSyntheticEvent } from "react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
+import { type z } from "zod";
+
+//reuse the deliverable's given structures for species, used in form validation/info displays
+import { kingdoms, speciesSchema } from "./add-species-dialog";
 import type { Species } from "./species-card";
-
-// Define kingdom enum for use in Zod schema and displaying dropdown options in the form
-const kingdoms = z.enum(["Animalia", "Plantae", "Fungi", "Protista", "Archaea", "Bacteria"]);
-
-// Use Zod to define the shape + requirements of a Species entry; used in form validation
-const speciesSchema = z.object({
-  scientific_name: z
-    .string()
-    .trim()
-    .min(1)
-    .transform((val) => val?.trim()),
-  common_name: z
-    .string()
-    .nullable()
-    // Transform empty string or only whitespace input to null before form submission, and trim whitespace otherwise
-    .transform((val) => (!val || val.trim() === "" ? null : val.trim())),
-  kingdom: kingdoms,
-  total_population: z.number().int().positive().min(1).nullable(),
-  image: z
-    .string()
-    .url()
-    .nullable()
-    // Transform empty string or only whitespace input to null before form submission, and trim whitespace otherwise
-    .transform((val) => (!val || val.trim() === "" ? null : val.trim())),
-  description: z
-    .string()
-    .nullable()
-    // Transform empty string or only whitespace input to null before form submission, and trim whitespace otherwise
-    .transform((val) => (!val || val.trim() === "" ? null : val.trim())),
-});
 
 type SpeciesFormValues = z.infer<typeof speciesSchema>;
 
@@ -70,6 +44,7 @@ export default function EditSpeciesDialog({ species }: { species: Species }) {
     kingdom: species.kingdom,
     scientific_name: species.scientific_name,
     total_population: species.total_population,
+    endangered: species.endangered,
     image: species.image,
   };
 
@@ -91,6 +66,7 @@ export default function EditSpeciesDialog({ species }: { species: Species }) {
         kingdom: data.kingdom,
         scientific_name: data.scientific_name,
         total_population: data.total_population,
+        endangered: data.endangered,
         image: data.image,
       })
       .eq("id", species.id);
@@ -212,6 +188,20 @@ export default function EditSpeciesDialog({ species }: { species: Species }) {
                     </FormItem>
                   );
                 }}
+              />
+              <FormField
+                control={form.control}
+                name="endangered"
+                render={({ field }) => (
+                  <FormItem>
+                    <div className="space-y-0.5">
+                      <FormLabel>Endangered</FormLabel>
+                    </div>
+                    <FormControl>
+                      <Switch checked={field.value} onCheckedChange={field.onChange} />
+                    </FormControl>
+                  </FormItem>
+                )}
               />
               <FormField
                 control={form.control}

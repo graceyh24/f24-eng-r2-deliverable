@@ -27,10 +27,11 @@ export default function LearnMoreDialog({ species }: { species: Species }) {
 
           <div className="w-1/2">
             {species.common_name && <h4 className="text-lg font-light">Common Name: {species.common_name}</h4>}
-            {species.kingdom && <h4 className="text-lg font-light">Kingdom: {species.kingdom}</h4>}
+            <h4 className="text-lg font-light">Kingdom: {species.kingdom}</h4>
             {species.total_population && (
               <h4 className="text-lg font-light"> Total Population: {species.total_population}</h4>
             )}
+            <h4 className="text-lg font-light"> Endangered: {species.endangered ? "Yes" : "No"}</h4>
           </div>
         </div>
 
